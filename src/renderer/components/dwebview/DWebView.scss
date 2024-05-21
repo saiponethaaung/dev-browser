@@ -1,0 +1,20 @@
+.content-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  overflow: auto;
+  flex-direction: column;
+  .navigation {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 5px;
+    .session-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+  }
+}
