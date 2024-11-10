@@ -5,11 +5,20 @@
   flex: 1;
   overflow: auto;
   flex-direction: column;
+  background: #424242;
   .navigation {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     padding: 5px;
+    background: #5f5f5f;
+    color: #8d8d8d;
+    box-sizing: border-box !important;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    * {
+      box-sizing: border-box !important;
+    }
     .session-info {
       display: flex;
       align-items: center;

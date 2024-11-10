@@ -12,7 +12,7 @@ export const knex = require('knex')({
   useNullAsDefault: true,
 });
 
-export const initDB = () => {
+export const initDB = async () => {
   console.log('run migration');
-  knex.migrate.latest();
+  await knex.migrate.latest();
 };

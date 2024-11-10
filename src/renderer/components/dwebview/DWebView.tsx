@@ -1,9 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
+import { Buffer } from 'buffer';
+import { TbCaptureFilled } from 'react-icons/tb';
+import { FaRegCircleStop } from 'react-icons/fa6';
+import {
+  IoArrowBackOutline,
+  IoArrowForwardOutline,
+  IoReload,
+} from 'react-icons/io5';
 import './DWebView.scss';
 
 function DWebView({ webSession }: any) {
-  let ref: any = useRef();
+  const ref: any = useRef();
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null,
+  );
+  let recordChunk: any = [];
+  const [timestamp, setTimestamp] = useState(`${new Date().getTime()}`);
+  const [recording, setRecording] = useState(false);
   const sesssionName = webSession.id.toString();
+
   const [webInfo, setWebInfo] = useState({
     url: webSession.host,
     canGoBack: false,
@@ -12,9 +27,10 @@ function DWebView({ webSession }: any) {
 
   useEffect(() => {
     if (ref.current) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ref.current.addEventListener('dom-ready', (w: any) => {
         if (!ref.current.isDevToolsOpened()) {
-          ref.current.openDevTools();
+          // ref.current.openDevTools();
         }
         ref.current.executeJavaScript(`
           let hasUsername = false;
@@ -60,6 +76,56 @@ function DWebView({ webSession }: any) {
     };
   }, [ref]);
 
+  const ondataavailable = (e: any) => {
+    recordChunk.push(e.data);
+  };
+
+  const stoprecording = async (t: string) => {
+    const blob = new Blob(recordChunk, {
+      type: 'video/webm',
+    });
+
+    const buffer = Buffer.from(await blob.arrayBuffer());
+
+    await window.electron.ipcRenderer.showSaveDialog(buffer, {
+      id: sesssionName,
+      ref: t,
+    });
+    recordChunk = [];
+  };
+
+  const recordSession = async (t: string) => {
+    navigator.mediaDevices
+      .getDisplayMedia({
+        audio: false,
+        video: {
+          width: window.outerWidth,
+          height: window.outerHeight,
+          frameRate: 30,
+        },
+      })
+      // eslint-disable-next-line promise/always-return
+      .then((stream) => {
+        // eslint-disable-next-line promise/always-return
+        const mrStream = new MediaRecorder(stream, {
+          mimeType: 'video/webm',
+        });
+
+        mrStream.ondataavailable = ondataavailable;
+        mrStream.onstop = () => stoprecording(t);
+        mrStream.start(1000);
+
+        setMediaRecorder(mrStream);
+      })
+      .catch((e) => console.log(e));
+  };
+
+  const stopRecord = async () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+    }
+  };
+
   const updateWebInfo = () => {
     setWebInfo({
       ...webInfo,
@@ -69,21 +135,34 @@ function DWebView({ webSession }: any) {
   };
 
   const networkHandler = () => {
-    window.electron.ipcRenderer.recordSession(sesssionName);
+    const refTimestamp = `${new Date().getTime()}`;
+
+    setTimestamp(refTimestamp);
+    window.electron.ipcRenderer.recordSession({
+      id: sesssionName,
+      ref: refTimestamp,
+    });
+    recordSession(refTimestamp);
+    setRecording(true);
   };
 
   const stopNetworkHandler = () => {
-    window.electron.ipcRenderer.stopRecordSession(sesssionName);
+    window.electron.ipcRenderer.stopRecordSession({
+      id: sesssionName,
+      ref: timestamp,
+    });
+    stopRecord();
+    setRecording(false);
   };
 
   const changeUrl = (e: any) => {
     e.preventDefault();
-    console.log('ref.current.loadURL', ref.current.loadURL);
-    console.log('webinfo.url', webInfo.url);
+
     let url = webInfo.url;
     if (url.indexOf('://') === -1) {
       url = 'https://' + url;
     }
+
     ref.current.loadURL(url);
   };
 
@@ -108,7 +187,7 @@ function DWebView({ webSession }: any) {
                   }
                 }}
               >
-                Back
+                <IoArrowBackOutline size={20} />
               </div>
               <div
                 style={{ cursor: 'pointer' }}
@@ -118,10 +197,12 @@ function DWebView({ webSession }: any) {
                   }
                 }}
               >
-                Forward
+                <IoArrowForwardOutline size={20} />
               </div>
             </div>
-            <div onClick={() => ref.current.reload()}>Reload</div>
+            <div onClick={() => ref.current.reload()}>
+              <IoReload size={18} />
+            </div>
           </div>
           <form onSubmitCapture={changeUrl} style={{ flex: 1 }}>
             <input
@@ -132,17 +213,29 @@ function DWebView({ webSession }: any) {
                   url: e.target.value,
                 });
               }}
-              style={{ flex: 1, width: '80%' }}
+              style={{ flex: 1, width: '100%' }}
             />
           </form>
         </div>
-        <div className="session-info">
-          <div>Host: {webSession.host}</div>
-          <div>Username: {webSession.username}</div>
-          <div>Password: {webSession.password}</div>
-        </div>
-        <div onClick={networkHandler}>record session</div>
-        <div onClick={stopNetworkHandler}>stop record session</div>
+        {/* <Tooltip
+          title={`Host: ${webSession.host}\n
+          \nUsername: ${webSession.username}
+          \nPassword: ${webSession.password}`}
+          arrow
+        >
+          <div className="session-info">Info</div>
+        </Tooltip> */}
+
+        {!recording && (
+          <div style={{ cursor: 'pointer' }} onClick={networkHandler}>
+            <TbCaptureFilled size={20} />
+          </div>
+        )}
+        {recording && (
+          <div style={{ cursor: 'pointer' }} onClick={stopNetworkHandler}>
+            <FaRegCircleStop size={20} />
+          </div>
+        )}
       </div>
       <webview
         ref={ref}

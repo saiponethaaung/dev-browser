@@ -1,99 +1,63 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import { MdClear } from 'react-icons/md';
 import './App.scss';
-import { useEffect, useRef, useState } from 'react';
-import { HiMiniHome } from 'react-icons/hi2';
-import DWebView from './components/dwebview/DWebView';
+import { useEffect, useRef } from 'react';
 import { Provider } from 'react-redux';
+import DWebView from './components/dwebview/DWebView';
+// eslint-disable-next-line import/no-named-as-default
 import store, { useAppDispatch, useAppSelector } from './store/store';
-import {
-  closeTab,
-  createSession,
-  loadSessions,
-  openTab,
-  selectSession,
-} from './store/sessionSlice';
-import ProjectListComponent from './components/projectList/ProjectList';
+import { loadSessions } from './store/sessionSlice';
+import TopNavigation from './components/top-navigation/TopNavigation';
+import SideNavigation from './components/side-navigation/SideNavigation';
 import SessionForm from './components/sessionForm/SessionForm';
 
 function Hello() {
-  let ref: any = useRef();
+  const ref: any = useRef();
   const dispatch = useAppDispatch();
-  const state = useAppSelector((state) => state.session);
-
-  useEffect(() => {
-    loadSession();
-  }, [ref]);
+  const state = useAppSelector((s) => s.session);
 
   const loadSession = async () => {
     dispatch(loadSessions());
   };
 
+  useEffect(() => {
+    loadSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref]);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div className="topNavigation">
-        <div onClick={() => dispatch(openTab('0'))} className="home">
-          <HiMiniHome />
-        </div>
-        {state.openSession.map((session: any, i) => {
-          return (
-            <div
-              onClick={() => dispatch(openTab(session.id))}
-              key={i}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '20px;',
-              }}
-            >
-              <div>{session.name}</div>
-              <MdClear
-                onClick={(e: any) => {
-                  e.stopPropagation();
-                  dispatch(closeTab(session.id));
-                }}
-              />
+    <div className="rootCon">
+      <TopNavigation />
+      <div className="contentBody">
+        <SideNavigation />
+        <div className="content">
+          {state.tab === '' && (
+            <div className="sessionInfo">
+              <h2>Welcome to CDS Browser</h2>
+              <p>
+                Select a session from the sidebar or create a new one to get
+                started.
+              </p>
             </div>
-          );
-        })}
-      </div>
-      <div
-        style={{ display: 'flex', flex: 1, width: '100%', overflow: 'auto' }}
-      >
-        {state.tab === '0' && (
-          <div className="infoCon">
-            <div className="sessionList">
-              <ul>
-                {state.sessions.map((session: any, i) => (
-                  <li key={i}>
-                    <ProjectListComponent session={session} />
-                  </li>
-                ))}
-                <li
-                  onClick={() => {
-                    dispatch(selectSession(undefined));
-                  }}
-                >
-                  Create new one
-                </li>
-              </ul>
-            </div>
+          )}
+          {state.tab === '0' && (
             <div className="sessionInfo">
               <SessionForm />
             </div>
-          </div>
-        )}
-        {state.openSession.map((session, i) => {
-          return (
-            <div
-              style={{ display: state.tab !== session.id ? 'none' : 'flex' }}
-              key={i}
-            >
-              <DWebView webSession={session} />
-            </div>
-          );
-        })}
+          )}
+          {state.openSession.map((session) => {
+            return (
+              <div
+                className={`session ${
+                  state.tab === session.id ? 'active' : ''
+                }`}
+                // eslint-disable-next-line react/no-array-index-key
+                key={session.id}
+              >
+                <DWebView webSession={session} />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

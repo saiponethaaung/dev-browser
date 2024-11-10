@@ -9,13 +9,13 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, session } from 'electron';
+import { app, BrowserWindow, desktopCapturer, session, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import * as fs from 'fs';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import './ipc';
-import * as fs from 'fs';
 import { initDB } from './db';
 
 class AppUpdater {
@@ -77,14 +77,18 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1208,
+    // width: 1024,
+    // height: 728,
+    height: 950,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       webviewTag: true,
+      nodeIntegration: true,
+      // contextIsolation: false,
     },
   });
 
@@ -114,6 +118,14 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
+  session.defaultSession.setDisplayMediaRequestHandler((request, callback) => {
+    // eslint-disable-next-line promise/catch-or-return
+    desktopCapturer.getSources({ types: ['window'] }).then((sources) => {
+      // Grant access to the first screen found.
+      // eslint-disable-next-line promise/no-callback-in-promise
+      callback({ video: sources[0], audio: 'loopback' });
+    });
+  });
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();

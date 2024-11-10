@@ -1,0 +1,22 @@
+.topNavigation {
+  display: flex;
+  background: #111827;
+  color: #fff;
+
+  > * {
+    cursor: pointer;
+    padding: 10px;
+  }
+
+  .tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+
+    &.tabActive {
+      background: #1f2937;
+      color: #fff;
+    }
+  }
+}

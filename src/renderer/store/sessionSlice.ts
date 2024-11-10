@@ -22,7 +22,7 @@ const initialState: SessionState = {
   isLoading: false,
   isCreating: false,
   isDeleting: false,
-  tab: '0',
+  tab: '',
   selectedSession: undefined,
   sessions: [],
   openSession: [],
@@ -46,6 +46,7 @@ const sessionSlice = createSlice({
       state,
       action: PayloadAction<SessionObject | undefined>,
     ) => {
+      state.tab = '0';
       state.selectedSession = action.payload;
     },
     closeTab: (state, action: PayloadAction<string>) => {
@@ -154,9 +155,12 @@ export const updateSession = createAsyncThunk(
 export const deleteSession = createAsyncThunk(
   'session/delete',
   async (id: any) => {
-    await window.electron.ipcRenderer.runQuery('DELETE FROM session WHERE id=:id;', {
-      id,
-    });
+    await window.electron.ipcRenderer.runQuery(
+      'DELETE FROM session WHERE id=:id;',
+      {
+        id,
+      },
+    );
     return id;
   },
 );

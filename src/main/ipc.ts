@@ -1,6 +1,10 @@
-import { ipcMain, session } from 'electron';
+import { desktopCapturer, dialog, ipcMain, session } from 'electron';
 import * as fs from 'fs';
 import { knex } from './db';
+import { DisableNetworkLog, EnableNetworkLog } from './ipc/network-log';
+import { BasePath } from './utils/base-path';
+import { ExecuteQuery } from './ipc/execute-query';
+import { SaveVideo } from './ipc/save-video';
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -8,33 +12,21 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
-ipcMain.on('networkLog', async (event, arg) => {
-  const partitionPath = __dirname + `/session_log/${arg}`;
-  await fs.mkdirSync(__dirname + `/session_log/${arg}`, { recursive: true });
+ipcMain.on('networkLog', EnableNetworkLog);
 
-  const ses = session.fromPartition(arg);
+ipcMain.on('disableNetworkLog', DisableNetworkLog);
 
-  ses.webRequest.onBeforeSendHeaders(
-    { urls: [], types: ['xhr'] },
-    async (details, callback) => {
-      await fs.writeFileSync(
-        partitionPath + `/${new Date().getTime()}.request.json`,
-        JSON.stringify(details),
-      );
-      callback({ requestHeaders: details.requestHeaders });
-    },
-  );
-  // event.reply('ipc-example', 'network');
+ipcMain.handle('runQuery', ExecuteQuery);
+
+ipcMain.handle('getVideoSources', async () => {
+  return desktopCapturer.getSources({ types: ['screen', 'window'] });
 });
 
-ipcMain.on('disableNetworkLog', async (event, arg) => {
-  const ses = session.fromPartition(arg);
-  ses.webRequest.onBeforeSendHeaders(null);
-  // event.reply('ipc-example', 'network');
+ipcMain.handle('showSaveDialog', async () => {
+  return dialog.showSaveDialog({
+    buttonLabel: 'Save video',
+    defaultPath: `vid-${Date.now()}.webm`,
+  });
 });
 
-ipcMain.handle('runQuery', async (event, arg) => {
-  console.log("Running query", arg)
-  const query = await knex.raw(arg.query, arg.params);
-  return query;
-});
+ipcMain.handle('saveVideo', SaveVideo);

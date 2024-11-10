@@ -1,6 +1,8 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { mkdirSync, writeFile } from 'fs';
+import { EnableNetworkProps } from './ipc/network-log';
 
 export type Channels = 'ipc-example';
 
@@ -21,10 +23,10 @@ const electronHandler = {
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
-    recordSession: (partition: string) => {
+    recordSession: (partition: EnableNetworkProps) => {
       ipcRenderer.send('networkLog', partition);
     },
-    stopRecordSession: (partition: string) => {
+    stopRecordSession: (partition: EnableNetworkProps) => {
       ipcRenderer.send('disableNetworkLog', partition);
     },
     runQuery: async (query: string, params: any) => {
@@ -32,9 +34,18 @@ const electronHandler = {
         query,
         params,
       });
-
-      console.log('res', res);
+      console.log(res);
       return res;
+    },
+    getVideoSources: async () => {
+      return ipcRenderer.invoke('getVideoSources');
+    },
+    showSaveDialog: async (buffer: any, params: EnableNetworkProps) => {
+      // const { canceled, filePath } = await ipcRenderer.invoke('showSaveDialog');
+      // if (canceled) return;
+      // console.log('filepath', filePath);
+      // writeFile(filePath, buffer, () => console.log('File saved'));
+      await ipcRenderer.invoke('saveVideo', { buffer, params });
     },
   },
 };

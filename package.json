@@ -84,6 +84,7 @@
     "@types/sqlite3": "^3.1.11",
     "@types/uuid": "^9.0.8",
     "better-sqlite3": "^10.0.0",
+    "buffer": "^6.0.3",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
@@ -238,7 +239,9 @@
   "electronmon": {
     "patterns": [
       "!**/**",
-      "src/main/**"
+      "src/main/**",
+      "!src/main/session_log",
+      "!src/main/session_log/**"
     ],
     "logLevel": "quiet"
   }
