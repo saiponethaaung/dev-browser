@@ -25,11 +25,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 22.1.0
-          cache: pnpm
+          cache: npm
+
+      - name: PNPM install
+        run: |
+          npm install -g pnpm
 
       - name: Install and build
         run: |
-          npm install -g pnpm
           pnpm install
           pnpm run postinstall
           pnpm run build
