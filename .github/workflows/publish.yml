@@ -22,10 +22,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Node and NPM
-        uses: actions/setup-node@v3
+        uses: pnpm/action-setup@v4
         with:
-          node-version: 22.1.0
-          cache: pnpm
+          version: 22.1.0
 
       - name: Install and build
         run: |
