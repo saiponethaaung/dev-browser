@@ -1,0 +1,23 @@
+.recordCon {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+
+  .recordList {
+    padding: 15px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    flex-direction: column;
+    gap: 30px;
+
+    .recordItem {
+      background: #fff;
+      padding: 15px;
+      border-radius: 15px;
+      border: 1px solid #e2e2e2;
+      width: 100%;
+    }
+  }
+}

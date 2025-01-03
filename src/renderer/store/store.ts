@@ -1,7 +1,6 @@
 import { Action, ThunkAction, configureStore } from '@reduxjs/toolkit';
+import { useSelector, TypedUseSelectorHook, useDispatch } from 'react-redux';
 import rootReducer, { RootState } from './rootReducer';
-import { TypedUseSelectorHook, useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
 
 export const store = configureStore({
   reducer: rootReducer,

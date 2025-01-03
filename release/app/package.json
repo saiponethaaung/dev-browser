@@ -14,5 +14,9 @@
     "postinstall": "npm run rebuild && npm run link-modules",
     "link-modules": "node -r ts-node/register ../../.erb/scripts/link-modules.ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "source-map-support": "^0.5.21",
+    "sqlite3": "5.0.0"
+  }
 }

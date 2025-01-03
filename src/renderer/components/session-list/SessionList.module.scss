@@ -27,6 +27,8 @@
   .createSession {
     padding: 15px 20px;
     .createSessionButton {
+      width: 100%;
+      border: none;
       background: #111827;
       color: #fff;
       text-align: center;
@@ -37,6 +39,9 @@
   }
 
   .records {
+    width: 100%;
+    border: none;
+    background: #fff;
     padding: 15px;
     border-top: 1px solid #e2e2e2;
     text-align: center;

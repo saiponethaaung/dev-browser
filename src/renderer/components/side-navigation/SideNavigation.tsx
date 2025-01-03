@@ -4,7 +4,7 @@ import SessionList from '../session-list/SessionList';
 function SideNavigation() {
   const state = useAppSelector((s) => s.session);
 
-  if (state.tab === '0' || state.tab === '') {
+  if (state.tab === '0' || state.tab === 'sessions' || state.tab === '') {
     return (
       <div>
         <SessionList />

@@ -1,7 +1,7 @@
 import { HiMiniHome } from 'react-icons/hi2';
+import { MdClear } from 'react-icons/md';
 import { closeTab, openTab } from '../../store/sessionSlice';
 import { useAppDispatch, useAppSelector } from '../../store/store';
-import { MdClear } from 'react-icons/md';
 import styles from './TopNavigation.module.scss';
 
 function TopNavigation() {

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from 'react';
 import { Buffer } from 'buffer';
 import { TbCaptureFilled } from 'react-icons/tb';
@@ -24,6 +25,29 @@ function DWebView({ webSession }: any) {
     canGoBack: false,
     canGoForward: false,
   });
+
+  const updateWebInfo = () => {
+    setWebInfo({
+      ...webInfo,
+      canGoBack: ref.current.canGoBack(),
+      canGoForward: ref.current.canGoForward(),
+    });
+  };
+
+  const stopRecord = async () => {
+    if (mediaRecorder) {
+      mediaRecorder.stop();
+    }
+  };
+
+  const stopNetworkHandler = () => {
+    window.electron.ipcRenderer.stopRecordSession({
+      id: sesssionName,
+      ref: timestamp,
+    });
+    stopRecord();
+    setRecording(false);
+  };
 
   useEffect(() => {
     if (ref.current) {
@@ -66,7 +90,7 @@ function DWebView({ webSession }: any) {
         updateWebInfo();
       });
       ref.current.addEventListener('did-navigate-in-page', ({ url }: any) => {
-        setWebInfo({ ...webInfo, url: url });
+        setWebInfo({ ...webInfo, url });
         updateWebInfo();
       });
     }
@@ -120,20 +144,6 @@ function DWebView({ webSession }: any) {
       .catch((e) => console.log(e));
   };
 
-  const stopRecord = async () => {
-    if (mediaRecorder) {
-      mediaRecorder.stop();
-    }
-  };
-
-  const updateWebInfo = () => {
-    setWebInfo({
-      ...webInfo,
-      canGoBack: ref.current.canGoBack(),
-      canGoForward: ref.current.canGoForward(),
-    });
-  };
-
   const networkHandler = () => {
     const refTimestamp = `${new Date().getTime()}`;
 
@@ -146,21 +156,12 @@ function DWebView({ webSession }: any) {
     setRecording(true);
   };
 
-  const stopNetworkHandler = () => {
-    window.electron.ipcRenderer.stopRecordSession({
-      id: sesssionName,
-      ref: timestamp,
-    });
-    stopRecord();
-    setRecording(false);
-  };
-
   const changeUrl = (e: any) => {
     e.preventDefault();
 
-    let url = webInfo.url;
+    let { url } = webInfo;
     if (url.indexOf('://') === -1) {
-      url = 'https://' + url;
+      url = `https://${url}`;
     }
 
     ref.current.loadURL(url);
@@ -217,14 +218,6 @@ function DWebView({ webSession }: any) {
             />
           </form>
         </div>
-        {/* <Tooltip
-          title={`Host: ${webSession.host}\n
-          \nUsername: ${webSession.username}
-          \nPassword: ${webSession.password}`}
-          arrow
-        >
-          <div className="session-info">Info</div>
-        </Tooltip> */}
 
         {!recording && (
           <div style={{ cursor: 'pointer' }} onClick={networkHandler}>

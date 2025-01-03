@@ -9,6 +9,7 @@ import { loadSessions } from './store/sessionSlice';
 import TopNavigation from './components/top-navigation/TopNavigation';
 import SideNavigation from './components/side-navigation/SideNavigation';
 import SessionForm from './components/sessionForm/SessionForm';
+import { Records } from './components/records/Records';
 
 function Hello() {
   const ref: any = useRef();
@@ -42,6 +43,11 @@ function Hello() {
           {state.tab === '0' && (
             <div className="sessionInfo">
               <SessionForm />
+            </div>
+          )}
+          {state.tab === 'sessions' && (
+            <div className="sessionInfo">
+              <Records />
             </div>
           )}
           {state.openSession.map((session) => {

@@ -1,4 +1,4 @@
-import { selectSession } from '../../store/sessionSlice';
+import { openTab, selectSession } from '../../store/sessionSlice';
 import { useAppDispatch, useAppSelector } from '../../store/store';
 import ProjectListComponent from '../projectList/ProjectList';
 import styles from './SessionList.module.scss';
@@ -27,11 +27,21 @@ function SessionList() {
           ))}
         </ul>
         <div className={styles.createSession}>
-          <div className={styles.createSessionButton} onClick={createSession}>
+          <button
+            type="button"
+            className={styles.createSessionButton}
+            onClick={createSession}
+          >
             + New Session
-          </div>
+          </button>
         </div>
-        <div className={styles.records}>Recorded Session</div>
+        <button
+          type="button"
+          className={styles.records}
+          onClick={() => dispatch(openTab('sessions'))}
+        >
+          Recorded Session
+        </button>
       </div>
     </div>
   );

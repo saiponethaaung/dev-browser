@@ -18,6 +18,43 @@ export interface SessionState {
   openSession: SessionObject[];
 }
 
+export const loadSessions = createAsyncThunk('session/list', async () => {
+  return window.electron.ipcRenderer.runQuery('SELECT * FROM session;', []);
+});
+
+export const createSession = createAsyncThunk(
+  'session/create',
+  async (values: any) => {
+    return window.electron.ipcRenderer.runQuery(
+      'INSERT INTO session (name, host, username, password) VALUES (:name, :host, :username, :password);',
+      values,
+    );
+  },
+);
+
+export const updateSession = createAsyncThunk(
+  'session/update',
+  async (values: any) => {
+    return window.electron.ipcRenderer.runQuery(
+      'UPDATE session SET name=:name, host=:host, username=:username, password=:password WHERE id=:id',
+      values,
+    );
+  },
+);
+
+export const deleteSession = createAsyncThunk(
+  'session/delete',
+  async (id: any) => {
+    await window.electron.ipcRenderer.runQuery(
+      'DELETE FROM session WHERE id=:id;',
+      {
+        id,
+      },
+    );
+    return id;
+  },
+);
+
 const initialState: SessionState = {
   isLoading: false,
   isCreating: false,
@@ -30,7 +67,7 @@ const initialState: SessionState = {
 
 const sessionSlice = createSlice({
   name: 'session',
-  initialState: initialState,
+  initialState,
   reducers: {
     openSession: (state, action: PayloadAction<SessionObject>) => {
       if (!state.openSession.find((s) => s.id === action.payload.id)) {
@@ -73,14 +110,14 @@ const sessionSlice = createSlice({
       state.sessions = action.payload;
 
       let hasSelected = false;
-      let closeSession: string[] = [];
 
       action.payload.forEach((session: SessionObject) => {
         if (!hasSelected) {
           hasSelected = state.selectedSession?.id === action.payload;
         }
 
-        for (let s in state.openSession) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const s in state.openSession) {
           if (state.openSession[s].id === session.id) {
             state.openSession[s] = session;
           }
@@ -102,7 +139,7 @@ const sessionSlice = createSlice({
     builder.addCase(createSession.pending, (state) => {
       state.isCreating = true;
     });
-    builder.addCase(createSession.fulfilled, (state, action) => {
+    builder.addCase(createSession.fulfilled, (state) => {
       state.isCreating = false;
     });
     builder.addCase(createSession.rejected, (state) => {
@@ -124,46 +161,6 @@ const sessionSlice = createSlice({
     });
   },
 });
-
-export const loadSessions = createAsyncThunk('session/list', async () => {
-  return await window.electron.ipcRenderer.runQuery(
-    'SELECT * FROM session;',
-    [],
-  );
-});
-
-export const createSession = createAsyncThunk(
-  'session/create',
-  async (values: any) => {
-    return await window.electron.ipcRenderer.runQuery(
-      'INSERT INTO session (name, host, username, password) VALUES (:name, :host, :username, :password);',
-      values,
-    );
-  },
-);
-
-export const updateSession = createAsyncThunk(
-  'session/update',
-  async (values: any) => {
-    return await window.electron.ipcRenderer.runQuery(
-      'UPDATE session SET name=:name, host=:host, username=:username, password=:password WHERE id=:id',
-      values,
-    );
-  },
-);
-
-export const deleteSession = createAsyncThunk(
-  'session/delete',
-  async (id: any) => {
-    await window.electron.ipcRenderer.runQuery(
-      'DELETE FROM session WHERE id=:id;',
-      {
-        id,
-      },
-    );
-    return id;
-  },
-);
 
 export const { openSession, openTab, closeTab, selectSession } =
   sessionSlice.actions;
